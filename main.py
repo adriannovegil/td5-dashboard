@@ -13,8 +13,8 @@ rpm = 0
 
 
 def fast_init():
-    port = pyftdi.serialext.serial_for_url(serial_port, baudrate=360, timeout=0.1)
-    #port = pyftdi.serialext.serial_for_url(serial_port, baudrate=300, timeout=0.1)
+    #port = pyftdi.serialext.serial_for_url(serial_port, baudrate=360, timeout=0.1)
+    port = pyftdi.serialext.serial_for_url(serial_port, baudrate=300, timeout=0.1)
     command = b"\x00"
     port.write(command)  # Send a 25ms pulse
     time.sleep(0.025)
@@ -159,11 +159,11 @@ time.sleep(0.5)
 # Start requesting data
 # Start requesting data
 while True:
-    os.system("clear")
+    #os.system("clear")
     print("\t\t Td5 Storm")
     print(" ")
     print("\t RPM: ", str(rpm))
     rpm = get_rpm()
-    #time.sleep(0.5)
+    time.sleep(0.5)
 
 port.close()

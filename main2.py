@@ -9,6 +9,7 @@ serial_port = "ftdi://ftdi:232:A50285BI/1"
 interframe_delay = 0.01
 debug = 5
 
+b_voltage=0
 rpm = 0
 
 
@@ -102,14 +103,24 @@ def seed_key(read_val_r):
 def get_rpm():
     global rpm
     response = send_packet(b"\x02\x21\x09", 6)
-    if len(response) < 6:
-        # rpm=0
-        i = 0
-    else:
-        rpm = ord(response[3]) * 256 + ord(response[4])
+    #if len(response) < 6:
+    #    # rpm=0
+    #    i = 0
+    #else:
+    #    rpm = response[3] * 256 + response[4]
+    rpm = response[3] * 256 + response[4]
 
     return rpm
 
+def get_bvolt():
+    global b_voltage
+    response=send_packet(b"\x02\x21\x10",8)
+    if len(response)<8:
+        #b_voltage=0
+        i=0
+    else:
+        b_voltage=response[3]*256+response[4]
+        b_voltage=float(b_voltage)/1000
 
 os.system("clear")
 print("")
@@ -162,8 +173,10 @@ while True:
     os.system("clear")
     print("\t\t Td5 Storm")
     print(" ")
+    #print("\t Bateria Tentsioa: ", str(b_voltage), " Volt")
     print("\t RPM: ", str(rpm))
     rpm = get_rpm()
+    #b_voltage=get_bvolt()
     #time.sleep(0.5)
 
 port.close()
