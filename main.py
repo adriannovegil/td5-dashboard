@@ -9,12 +9,13 @@ serial_port = "ftdi://ftdi:232:A50285BI/1"
 interframe_delay = 0.01
 debug = 5
 
+b_voltage=0
 rpm = 0
 
 
 def fast_init():
-    #port = pyftdi.serialext.serial_for_url(serial_port, baudrate=360, timeout=0.1)
-    port = pyftdi.serialext.serial_for_url(serial_port, baudrate=300, timeout=0.1)
+    port = pyftdi.serialext.serial_for_url(serial_port, baudrate=360, timeout=0.1)
+    #port = pyftdi.serialext.serial_for_url(serial_port, baudrate=300, timeout=0.1)
     command = b"\x00"
     port.write(command)  # Send a 25ms pulse
     time.sleep(0.025)
@@ -102,14 +103,24 @@ def seed_key(read_val_r):
 def get_rpm():
     global rpm
     response = send_packet(b"\x02\x21\x09", 6)
-    if len(response) < 6:
-        # rpm=0
-        i = 0
-    else:
-        rpm = ord(response[3]) * 256 + ord(response[4])
+    #if len(response) < 6:
+    #    # rpm=0
+    #    i = 0
+    #else:
+    #    rpm = response[3] * 256 + response[4]
+    rpm = response[3] * 256 + response[4]
 
     return rpm
 
+def get_bvolt():
+    global b_voltage
+    response=send_packet(b"\x02\x21\x10",8)
+    if len(response)<8:
+        #b_voltage=0
+        i=0
+    else:
+        b_voltage=response[3]*256+response[4]
+        b_voltage=float(b_voltage)/1000
 
 os.system("clear")
 print("")
@@ -127,17 +138,17 @@ port = pyftdi.serialext.serial_for_url(serial_port, baudrate=10400, timeout=0.1)
 if debug > 2:
     print("Init Frame")
 time.sleep(0.1)
-response = send_packet(b"\x81\x13\xF7\x81", 5)  # Init Frame
+response = send_packet(b"\x81\x13\xF7\x81\x0C", 7)  # Init Frame
 
 if debug > 2:
     print("Start Diagnostics")
 time.sleep(0.1)
-response = send_packet(b"\x02\x10\xA0", 3)  # Start Diagnostics
+response = send_packet(b"\x02\x10\xA0\xB2", 3)  # Start Diagnostics
 
 if debug > 2:
     print("Seed Request I")
 time.sleep(0.1)
-response = send_packet(b"\x02\x27\x01", 6)  # Seed Request
+response = send_packet(b"\x02\x27\x01\x2A", 6)  # Seed Request
 
 if (len(response)==6):
     if debug > 2:
@@ -159,11 +170,13 @@ time.sleep(0.5)
 # Start requesting data
 # Start requesting data
 while True:
-    #os.system("clear")
+    os.system("clear")
     print("\t\t Td5 Storm")
     print(" ")
+    #print("\t Bateria Tentsioa: ", str(b_voltage), " Volt")
     print("\t RPM: ", str(rpm))
     rpm = get_rpm()
-    time.sleep(0.5)
+    #b_voltage=get_bvolt()
+    #time.sleep(0.5)
 
 port.close()
